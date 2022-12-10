@@ -18,7 +18,7 @@ app.use('/estado-equipo', require('./router/estadoEquipo'));
 app.use('/inventario', require('./router/inventario'));
 app.use('/marca', require('./router/marca'));
 app.use('/tipo-equipo', require('./router/tipoEquipo'));
-app.use('/login', require('./routes/login')); //nueva ruta para el servicio de login
+app.use('/login', require('./router/login')); //nueva ruta para el servicio de login
 
 app.listen(port, () => {
     console.log(`API REST Nodejs en el puerto ${port}`)

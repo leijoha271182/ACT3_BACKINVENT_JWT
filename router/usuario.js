@@ -8,7 +8,7 @@ const { validarCreacionUsuario, validarUsuario } = require('../helpers/validacio
 
 const router = Router();
 
-router.get('/userlist', [ validarJWT ],
+router.get('/userlist', [ validarJWT, validarRolAdmin ],
 
 async function (req, res) {
     // console.log('get users')
@@ -46,30 +46,35 @@ async function (req, res) {
                 resp: validar
             });
         }
-        const existeUsuario = await Usuario.findOne({ email: req.body.email })
+        const existeUsuario = await Usuario.findOne({ email: req.body.email });
 
         if (existeUsuario) {
-            return res.status(400).json({
-                codigo: "Email existente",
-                resp: "El email del usuario ya existe, por favor registre nuevo email"
-            });
-        }
+            return res.status(400).json({ mensaje: "Emai existe" }) ;
+            }
 
-        let newUsuario = new Usuario({
-            nombre: req.body.nombre,
-            email: req.body.email,
-            estado: req.body.estado,
-            fechaCreacion: new Date(),
-            fechaActualizacion: new Date(),
-        })
+        let usuario = new Usuario();
+            usuario.nombre = req.body.nombre,
+            usuario.email = req.body.email,
+            usuario.estado = req.body.estado,
+            usuario.rol = req.body.rol;
+            
+            const salt = bycript.genSaltSync();
+            const contrasena = bycript.hashSync(req.body.contrasena, salt);
+            usuario.contrasena = contrasena;
 
-        await newUsuario.save() //Guardando usuario en Base de Datos
+            usuario.fechaCreacion = new Date(),
+            usuario.fechaActualizacion = new Date(),
+        
 
-        res.status(200).json({
-            codigo: "Usuario guardado",
-            resp: "El usuario ha sido creado satisfactoriamente",
-            usuario: newUsuario
-        }); // para mostrarlo como respuesta 
+        usuario = await usuario.save() //Guardando usuario en Base de Datos
+
+ //       res.status(200).json({
+ //           codigo: "Usuario guardado",
+   //         resp: "El usuario ha sido creado satisfactoriamente",
+     //       usuario: newUsuario
+
+            res.send(usuario);
+  //      }); // para mostrarlo como respuesta 
 
     } catch (error) {
         console.log(error);
@@ -82,7 +87,7 @@ async function (req, res) {
 
 
 
-router.get('/:usuarioId', async function (req, res) {
+router.get('/:usuarioId', [ validarJWT, validarRolAdmin ], async function (req, res) {
     try {
         const usuario = await Usuario.findById(req.params.usuarioId);
         if(usuario){
